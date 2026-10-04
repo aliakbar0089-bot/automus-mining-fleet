@@ -1,14 +1,38 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import os
+from groq import Groq
 
-# --- PAGE SETUP ---
+# --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Automus Mining Fleet - Portal",
+    page_title="Automus Mining Fleet - Gypsum Site Portal",
     page_icon="🚜",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# --- GROQ CLIENT INITIALIZATION ---
+groq_api_key = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY"))
+
+def get_groq_response(prompt, system_instruction, model="llama-3.3-70b-versatile"):
+    """Helper function to route tasks to specific AI agents via Groq API."""
+    if not groq_api_key:
+        return "⚠️ **Groq API Key missing.** Please configure GROQ_API_KEY in Streamlit Secrets."
+    try:
+        client = Groq(api_key=groq_api_key)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=800
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"⚠️ **Agent Error:** {str(e)}"
 
 # --- MOCK DATA INITIALIZATION ---
 if 'faults' not in st.session_state:
@@ -33,63 +57,55 @@ if 'diesel' not in st.session_state:
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.image("https://img.icons8.com/color/96/dump-truck.png", width=64)
 st.sidebar.title("Automus Mining Fleet")
-st.sidebar.caption("Intelligent Site Operations & Management Platform")
+st.sidebar.caption("Gypsum Operations Platform")
 
 portal = st.sidebar.radio(
-    "Select Portal:",
+    "Select Operational Portal:",
     [
-        "1. HR Portal", 
-        "2. Accounts Portal", 
-        "3. Site Manager Portal", 
-        "4. Executive Dashboard",
-        "5. Repair & Maintenance Portal"
+        "1. HR Portal (Onboarding Agent)", 
+        "2. Accounts Portal (Fuel Analytics Agent)", 
+        "3. Operations Portal (Dispatch Agent)", 
+        "4. Maintenance Portal (Diagnostic Agent)",
+        "5. Store & Inventory Portal",
+        "6. Executive Dashboard (Strategic Agent)"
     ]
 )
 
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Automus AI Engine Active**: Automated WhatsApp image parsing enabled for fuel receipts & breakdown logs.")
+st.sidebar.success("🤖 **AI Agents Active**\n- Gypsum Logistics\n- Fuel Audit\n- Dispatch Agent\n- Diagnostic Agent\n- Inventory Agent\n- Executive Agent")
 
 # ==========================================
 # 1. HR PORTAL
 # ==========================================
-if portal == "1. HR Portal":
-    st.title("👷 Automus HR & Operator Management")
-    st.markdown("Onboard drivers, allocate heavy equipment, and manage site rosters.")
+if portal == "1. HR Portal (Onboarding Agent)":
+    st.title("👷 HR Portal & Onboarding Agent")
+    st.markdown("Automated driver verification and equipment allocation at the Gypsum Site.")
     
-    tab1, tab2 = st.tabs(["Employee Induction & Allocation", "Current Roster"])
-    
-    with tab1:
-        st.subheader("New Employee Induction & Asset Allocation")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.text_input("Full Name")
-            st.text_input("National ID / Iqama Number")
-            st.selectbox("Designation", ["Trailer Operator", "Excavator Operator", "Heavy Mechanic", "Site Supervisor"])
-        with col2:
-            st.selectbox("Assign Machine / Vehicle", ["Trailer 01", "Trailer 02", "Trailer 03", "Excavator 01", "Excavator 02", "Hammer EX-01"])
-            st.date_input("Deployment Date", datetime.date.today())
-            st.file_uploader("Upload Driver License / Certification", type=["pdf", "png", "jpg"])
-        
-        if st.button("Save Induction & Allocate Asset", type="primary"):
-            st.success("Operator successfully onboarded and assigned in Automus Mining Fleet!")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Operator Induction")
+        emp_name = st.text_input("Full Name", "Ahmad Hassan")
+        iqama = st.text_input("Iqama / National ID", "2489012345")
+        role = st.selectbox("Designation", ["Trailer Operator", "Excavator Operator", "Heavy Mechanic", "Hammer Specialist"])
+        exp_years = st.number_input("Years of Experience", min_value=1, max_value=40, value=6)
+        assigned_asset = st.selectbox("Target Equipment", ["Trailer 01", "Trailer 02", "Excavator 01", "Hammer EX-01"])
 
-    with tab2:
-        st.subheader("Active Fleet Allocation")
-        roster_data = pd.DataFrame({
-            "Operator": ["Ali Hassan", "Tariq Mahmood", "Zubair Khan", "Sajid Ahmed"],
-            "Role": ["Trailer Driver", "Trailer Driver", "Excavator Operator", "Hammer Operator"],
-            "Assigned Asset": ["Trailer 01", "Trailer 02", "Excavator 01", "Hammer EX-01"],
-            "Site Location": ["Zone A - Clay Pit", "Zone A - Clay Pit", "Zone B - Gypsum Quarry", "Zone B - Gypsum Quarry"],
-            "Status": ["Active", "Active", "Active", "On Leave"]
-        })
-        st.dataframe(roster_data, use_container_width=True)
+    with col2:
+        st.subheader("🤖 AI Agent Assessment")
+        if st.button("Run Agent Evaluation", type="primary"):
+            system_prompt = "You are the Automus Onboarding AI Agent for Gypsum Quarry Operations. Evaluate operator details, safety compliance, and confirm equipment match."
+            user_prompt = f"Evaluate candidate: Name: {emp_name}, Role: {role}, Experience: {exp_years} years, Assigned Asset: {assigned_asset} for single-site Gypsum operations."
+            
+            with st.spinner("Logistics Agent evaluating operator..."):
+                agent_response = get_groq_response(user_prompt, system_prompt)
+                st.info(agent_response)
 
 # ==========================================
 # 2. ACCOUNTS PORTAL
 # ==========================================
-elif portal == "2. Accounts Portal":
-    st.title("💰 Automus Accounts & Fuel Analytics")
-    st.markdown("Daily, weekly, and monthly diesel cost logs parsed automatically from WhatsApp receipt updates.")
+elif portal == "2. Accounts Portal (Fuel Analytics Agent)":
+    st.title("💰 Accounts Portal & Fuel Analytics Agent")
+    st.markdown("Gypsum site diesel audit, weighbridge earnings, and cost tracking.")
     
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Today's Diesel Cost", "$1,356", "+8%")
@@ -98,142 +114,102 @@ elif portal == "2. Accounts Portal":
     col4.metric("Mobile Tanker Fuel", "780 L", "Excavators/Hammers")
     
     st.markdown("---")
-    st.subheader("Diesel Transactions Log")
-    period = st.selectbox("View Period", ["Daily", "Weekly Summary", "Monthly Breakdown"])
     st.dataframe(st.session_state.diesel, use_container_width=True)
     
-    st.subheader("Cost Distribution by Equipment Type")
-    chart_data = pd.DataFrame({
-        "Asset Type": ["Trailers (Pump)", "Excavators (Tanker)", "Hammers (Tanker)"],
-        "Cost ($)": [1200, 2400, 1100]
-    }).set_index("Asset Type")
-    st.bar_chart(chart_data)
+    st.subheader("🤖 AI Fuel Anomaly Audit")
+    if st.button("Run Fuel Audit", type="primary"):
+        system_prompt = "You are the Automus Fuel Analytics AI Agent for Gypsum quarry operations. Audit diesel consumption and flag abnormal burn rates."
+        log_json = st.session_state.diesel.to_json(orient="records")
+        user_prompt = f"Audit these Gypsum site diesel transactions: {log_json}."
+        
+        with st.spinner("Fuel Agent auditing logs..."):
+            audit_result = get_groq_response(user_prompt, system_prompt)
+            st.success(audit_result)
 
 # ==========================================
-# 3. SITE MANAGER PORTAL
+# 3. OPERATIONS PORTAL
 # ==========================================
-elif portal == "3. Site Manager Portal":
-    st.title("🚜 Automus Operations & Site Manager Portal")
-    st.markdown("Monitor fleet locations, daily production output, and incoming fault indicators.")
+elif portal == "3. Operations Portal (Dispatch Agent)":
+    st.title("🚜 Operations & Production Portal")
+    st.markdown("Gypsum haulage monitoring, trip counts, and daily productivity logs.")
     
-    tab1, tab2 = st.tabs(["Active Faults & Equipment Alerts", "Daily Production Logs"])
+    tab1, tab2 = st.tabs(["Daily Production Logs", "🤖 AI Dispatch Advisor"])
     
     with tab1:
-        st.subheader("⚠ Equipment Fault Indicators (Real-Time from WhatsApp)")
-        st.caption("Fault alerts uploaded by operators in WhatsApp groups appear here automatically.")
-        
-        st.dataframe(st.session_state.faults, use_container_width=True)
-        
-        st.markdown("### 🛠️ Dispatch Action (Automus Internal Notification)")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            fault_id = st.selectbox("Select Fault ID", st.session_state.faults["ID"])
-        with c2:
-            new_status = st.selectbox("Update Status", ["Open", "In Progress", "Resolved"])
-        with c3:
-            st.write("")
-            st.write("")
-            if st.button("Update Status & Notify Mechanic"):
-                st.session_state.faults.loc[st.session_state.faults["ID"] == fault_id, "Status"] = new_status
-                st.success(f"Status for {fault_id} updated to '{new_status}' on the Automus dashboard.")
-                st.rerun()
-
-    with tab2:
-        st.subheader("Site Production Log")
         prod_data = pd.DataFrame({
             "Date": ["2026-10-02", "2026-10-02", "2026-10-01"],
             "Asset": ["Trailer 01", "Excavator 01", "Hammer EX-01"],
             "Operating Hours": [10.5, 11.0, 8.5],
-            "Trips / Output": ["14 Trips", "1,800 Tons", "650 Tons Break"],
-            "Site": ["Zone A", "Zone A", "Zone B"]
+            "Trips / Output": ["14 Trips", "1,800 Tons", "650 Tons Break"]
         })
         st.dataframe(prod_data, use_container_width=True)
 
+    with tab2:
+        st.subheader("Request Haulage & Production Plan")
+        target_tons = st.number_input("Target Gypsum Production (Tons/Day)", value=2000)
+        
+        if st.button("Generate Strategy", type="primary"):
+            system_prompt = "You are the Automus Operations AI Agent for Gypsum extraction. Calculate 40-ton dumper trip cycles over a 9km haulage route to reach target tonnage."
+            user_prompt = f"Plan extraction and haulage strategy for {target_tons} Tons/Day at the Gypsum quarry."
+            
+            with st.spinner("Dispatch Agent computing fleet cycle times..."):
+                plan = get_groq_response(user_prompt, system_prompt)
+                st.markdown(plan)
+
 # ==========================================
-# 4. EXECUTIVE DASHBOARD
+# 4. MAINTENANCE PORTAL
 # ==========================================
-elif portal == "4. Executive Dashboard":
-    st.title("📊 Automus Executive KPI Dashboard")
-    st.markdown("High-level overview for Operations Managers, Project Managers, and Owners.")
+elif portal == "4. Maintenance Portal (Diagnostic Agent)":
+    st.title("🔧 Repair & Maintenance Portal")
+    st.markdown("Breakdown diagnostics, hydraulic hammer maintenance, and work order tracking.")
+    
+    st.dataframe(st.session_state.faults, use_container_width=True)
+    
+    st.subheader("🤖 AI Technical Diagnostics")
+    selected_fault = st.selectbox("Select Breakdown Ticket", st.session_state.faults["ID"])
+    fault_details = st.session_state.faults[st.session_state.faults["ID"] == selected_fault].to_dict(orient="records")[0]
+    
+    if st.button("Diagnose Fault", type="primary"):
+        system_prompt = "You are the Automus Mechanical Diagnostic AI Agent for heavy Gypsum quarry equipment (rock breakers, excavators, tractor trailers)."
+        user_prompt = f"Diagnose this breakdown log: {fault_details}. Provide: 1. Root Cause, 2. Required Spare Parts, 3. Estimated Downtime."
+        
+        with st.spinner("Diagnostic Agent analyzing issue..."):
+            diag_output = get_groq_response(user_prompt, system_prompt)
+            st.warning(diag_output)
+
+# ==========================================
+# 5. STORE & INVENTORY PORTAL
+# ==========================================
+elif portal == "5. Store & Inventory Portal":
+    st.title("📦 Store & Inventory Management")
+    st.markdown("Track spare parts, lubricants, filters, and issued machine components.")
+    
+    inv_data = pd.DataFrame([
+        {"Part ID": "PRT-01", "Part Name": "Hydraulic Oil Filter", "Stock On Hand": 14, "Unit Cost ($)": 45, "Reorder Level": 5},
+        {"Part ID": "PRT-02", "Part Name": "Rock Breaker Chisel Tip", "Stock On Hand": 3, "Unit Cost ($)": 650, "Reorder Level": 2},
+        {"Part ID": "PRT-03", "Part Name": "Trailer Brake Shoe Set", "Stock On Hand": 8, "Unit Cost ($)": 120, "Reorder Level": 4}
+    ])
+    st.dataframe(inv_data, use_container_width=True)
+
+# ==========================================
+# 6. EXECUTIVE DASHBOARD
+# ==========================================
+elif portal == "6. Executive Dashboard (Strategic Agent)":
+    st.title("📊 Executive Dashboard")
+    st.markdown("High-level Gypsum quarry KPIs, fleet availability, and cost per ton.")
     
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Active Fleet Count", "23 / 23 Assets", "100% Active")
-    m2.metric("Total Production Output (MTD)", "42,500 Tons", "+12% vs Target")
+    m1.metric("Active Fleet", "23 / 23 Assets", "100% Active")
+    m2.metric("MTD Production", "42,500 Tons Gypsum", "+12% vs Target")
     m3.metric("Fleet Availability", "91.3%", "-2% Maintenance")
-    m4.metric("Avg Fuel Efficiency", "1.8 L/Ton", "Optimal")
-    
-    st.markdown("---")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.subheader("Weekly Fleet Productivity (Tons)")
-        prod_chart = pd.DataFrame({
-            "Day": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-            "Production (Tons)": [2100, 2300, 2050, 2400, 1900, 2250, 2150]
-        }).set_index("Day")
-        st.line_chart(prod_chart)
-        
-    with c2:
-        st.subheader("Downtime & Fault Breakdown")
-        fault_chart = pd.DataFrame({
-            "Category": ["Hydraulics", "Engine / Filters", "Tires & Tracks", "Electrical"],
-            "Hours Lost": [14, 8, 5, 2]
-        }).set_index("Category")
-        st.bar_chart(fault_chart)
-
-# ==========================================
-# 5. REPAIR & MAINTENANCE PORTAL
-# ==========================================
-elif portal == "5. Repair & Maintenance Portal":
-    st.title("🔧 Automus Repair & Maintenance Portal")
-    st.markdown("Dedicated interface for mechanics and engineering staff to resolve breakdown faults and maintain service history.")
-    
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Pending Faults", len(st.session_state.faults[st.session_state.faults["Status"] == "Open"]), "Requires Action")
-    m2.metric("In Repair", len(st.session_state.faults[st.session_state.faults["Status"] == "In Progress"]), "Work Orders Open")
-    m3.metric("Preventive Service Due", "3 Machines", "Next 48 Hours")
+    m4.metric("Avg Efficiency", "1.8 L/Ton", "Optimal")
     
     st.markdown("---")
     
-    tab1, tab2, tab3 = st.tabs(["Active Fault Queue", "Log New Maintenance / Service", "Work Order History"])
-    
-    with tab1:
-        st.subheader("🚨 Breakdown Fault Queue (Parsed from WhatsApp)")
-        st.caption("Mechanics can pick up open issues, assign technicians, and close jobs here.")
+    if st.button("Generate Strategy Briefing", type="primary"):
+        system_prompt = "You are the Automus Strategic AI Operations Advisor for executive leadership managing a single-site Gypsum quarry operation."
+        user_prompt = "Synthesize fleet availability (91.3%), production output (42,500 Tons MTD), and fuel efficiency (1.8 L/Ton). Provide 3 concise operational recommendations."
         
-        st.dataframe(st.session_state.faults, use_container_width=True)
-        
-        st.markdown("### 📝 Mechanics Update Form")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            selected_fault = st.selectbox("Select Fault Work Order", st.session_state.faults["ID"], key="maint_fault_id")
-        with col2:
-            assigned_mechanic = st.text_input("Lead Mechanic Name", "Rashid Khan")
-        with col3:
-            update_status = st.selectbox("Update Status", ["Open", "In Progress", "Resolved"], key="maint_status")
-            
-        repair_notes = st.text_area("Repair Action Notes / Spare Parts Used", "Replaced hydraulic seal ring and refilled fluid.")
-        
-        if st.button("Save Maintenance Action", type="primary"):
-            st.session_state.faults.loc[st.session_state.faults["ID"] == selected_fault, "Status"] = update_status
-            st.session_state.faults.loc[st.session_state.faults["ID"] == selected_fault, "Assigned Mechanic"] = assigned_mechanic
-            st.success(f"Work order {selected_fault} updated to '{update_status}' by {assigned_mechanic}!")
-            st.rerun()
-
-    with tab2:
-        st.subheader("⚙ Log Scheduled Service / PM Work Order")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.selectbox("Select Asset", ["Trailer 01", "Trailer 02", "Trailer 03", "Excavator 01", "Excavator 02", "Hammer EX-01", "Hammer EX-02"])
-            st.selectbox("Service Category", ["Preventive Maintenance (PM)", "Unscheduled Repair", "Overhaul", "Tire/Track Replacement"])
-            st.text_input("Technician / Workshop Name")
-        with c2:
-            st.text_input("Parts / Consumables Used (e.g., Oil Filter, Hydraulic Hose)")
-            st.number_input("Parts & Labor Cost ($)", min_value=0, value=250)
-            st.date_input("Service Date", datetime.date.today())
-            
-        if st.button("Log Maintenance Record"):
-            st.success("Maintenance record saved to database!")
-
-    with tab3:
-        st.subheader("📜 Maintenance & Repair History")
-        st.dataframe(st.session_state.maintenance_logs, use_container_width=True)
+        with st.spinner("Strategic Agent compiling executive brief..."):
+            exec_brief = get_groq_response(user_prompt, system_prompt)
+            st.markdown(exec_brief)
