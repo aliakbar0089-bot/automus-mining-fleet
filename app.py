@@ -15,7 +15,7 @@ st.set_page_config(
 # --- GROQ CLIENT INITIALIZATION ---
 groq_api_key = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY"))
 
-def get_groq_response(prompt, system_instruction, model="llama-3.3-70b-versatile"):
+def get_groq_response(prompt, system_instruction, model="llama3-70b-8192"):
     """Helper function to route tasks to specific AI agents via Groq API."""
     if not groq_api_key:
         return "⚠️ **Groq API Key missing.** Please configure GROQ_API_KEY in Streamlit Secrets."
