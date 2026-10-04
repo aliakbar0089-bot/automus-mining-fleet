@@ -1,31 +1,48 @@
-# 🚜 Automus Mining Fleet
+# 🚜 Automus Mining Fleet — Gypsum Quarry Operations
 
-**Automus Mining Fleet** is an intelligent site operations and fleet management portal designed for mining, quarrying, and heavy equipment operations. It automates data intake from WhatsApp group uploads (diesel receipts, mobile tanker logsheets, breakdown photos) using **Groq AI (Llama Vision)** and provides a multi-role dashboard built with **Streamlit**.
-
----
-
-## 🌟 Key Features & Role Portals
-
-1. **👷 HR & Operator Management:** Onboard drivers, track certifications, and allocate operators to specific heavy equipment assets across site zones.
-2. **💰 Accounts & Fuel Analytics:** Track daily, weekly, and monthly diesel consumption and costs automatically parsed from fuel pump receipts and mobile tanker logs.
-3. **🚜 Operations & Site Manager Portal:** Monitor active equipment status, review real-time fault indicators extracted from WhatsApp messages, update maintenance statuses without manual messaging, and log daily production metrics.
-4. **📊 Executive KPI Dashboard:** High-level operational metrics for Project Managers and Owners, including fleet availability, MTD production tonnage, and downtime trend analysis.
+**Automus Mining Fleet** is an agentic AI-driven fleet management platform built specifically for heavy quarry operations (Gypsum extraction). It automates data ingestion from WhatsApp groups (diesel receipts, weighbridge bills, breakdown photos) into Google Sheets and provides real-time operational insights across 6 specialized AI agent portals.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 6 Specialized AI Agent Portals
 
-* **Frontend & Dashboard:** [Streamlit](https://streamlit.io/)
-* **AI & Vision Parsing Engine:** [Groq API](https://groq.com/) (`llama-3.2-11b-vision-preview`)
+1. **👷 HR & Onboarding Agent:** Onboard drivers, verify national IDs/Iqamas, and assign operators directly to heavy machinery (trailers, excavators, rock breakers).
+2. **💰 Accounts & Fuel Analytics Agent:** Audit daily, weekly, and monthly diesel logs parsed from WhatsApp fuel pump receipts and mobile tanker uploads, and track weighbridge earnings.
+3. **🚜 Operations & Dispatch Agent:** Monitor heavy machinery output, track trip counts, and calculate optimal haulage cycle times over 9 km dumper routes.
+4. **🔧 Repair & Maintenance (Diagnostic Agent):** Analyze breakdown photos and fault reports posted in WhatsApp, estimate root causes, suggest spare parts, and compute Mean Time to Repair (MTTR).
+5. **📦 Store & Inventory Agent:** Manage spare parts catalog, track items issued per machine/work order, and monitor reorder threshold levels.
+6. **📊 Executive Strategic Agent:** High-level strategic briefing generator summarizing site availability, MTD tonnage, and unit cost per ton ($\text{Cost/Ton}$).
+
+---
+
+## 🛠️ Core Tech Stack
+
+* **Frontend & UI:** [Streamlit](https://streamlit.io/)
+* **AI & Vision Engine:** [Groq API](https://groq.com/) (`llama-3.3-70b-versatile` & `llama-3.2-11b-vision-preview`)
+* **Database & Persistence:** Google Sheets API (`gspread` / `st.connection`)
 * **Data Processing:** Python / Pandas
-* **Database / Backend:** Google Sheets API (`gspread`) / Streamlit Connections
-* **Hosting & Deployment:** GitHub & Streamlit Community Cloud
+* **Deployment:** GitHub & Streamlit Community Cloud
 
 ---
 
-## 🚀 Local Setup Instructions
+## 📊 Google Sheets Multi-Tab Database Schema
 
-1. **Clone or download the repository:**
+The system uses an 8-tab workbook structure designed for single-site Gypsum quarrying:
+
+1. `Assets_Master`: Machine catalog (`Asset ID`, `Type`, `Model`, `Serial No`, `Status`)
+2. `Driver_Roster`: Operator credentials & machine allocations
+3. `Fuel_Log`: Diesel dispenser receipts & mobile tanker logs
+4. `Weighbridge_Earnings`: Net tonnage shipped & daily revenue tracking
+5. `Faults_Breakdowns`: Open breakdown tickets, timestamps, & downtime hours
+6. `Maintenance_Schedule`: 250-hr/500-hr preventive service schedules
+7. `Inventory_Store`: Spare parts inventory, unit costs, & reorder alerts
+8. `Production_Log`: Daily trips, operating hours, & tonnage per asset
+
+---
+
+## 🚀 Local Setup & Installation
+
+1. **Clone the repository:**
    ```bash
    git clone [https://github.com/your-username/automus-mining-fleet.git](https://github.com/your-username/automus-mining-fleet.git)
    cd automus-mining-fleet
