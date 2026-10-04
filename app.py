@@ -33,9 +33,6 @@ def get_groq_response(prompt, system_instruction, model="llama3-70b-8192"):
         return response.choices[0].message.content
     except Exception as e:
         return f"⚠️ **Agent Error:** {str(e)}"
-            max_tokens=800
-        )
-        return response.choices[0].message.content
     except Exception as e:
         return f"⚠️ **Agent Error:** {str(e)}"
 
