@@ -15,7 +15,7 @@ st.set_page_config(
 # --- GROQ CLIENT INITIALIZATION ---
 groq_api_key = st.secrets.get("GROQ_API_KEY", os.environ.get("GROQ_API_KEY"))
 
-def get_groq_response(prompt, system_instruction, model="llama3-70b-8192"):
+def get_groq_response(prompt, system_instruction, model="openai/gpt-oss-120b"):
     """Helper function to route tasks to specific AI agents via Groq API."""
     if not groq_api_key:
         return "⚠️ **Groq API Key missing.** Please configure GROQ_API_KEY in Streamlit Secrets."
@@ -31,8 +31,6 @@ def get_groq_response(prompt, system_instruction, model="llama3-70b-8192"):
             max_tokens=800
         )
         return response.choices[0].message.content
-    except Exception as e:
-        return f"⚠️ **Agent Error:** {str(e)}"
     except Exception as e:
         return f"⚠️ **Agent Error:** {str(e)}"
 
